@@ -186,6 +186,8 @@ import { scroll } from 'quasar';
 import { isNull, isEmpty, hasIn } from 'lodash';
 import dayjs from 'dayjs';
 
+import { logError } from 'src/services/helper';
+
 import { CountryCard, Card } from 'components/general/Card';
 import { ChartBar } from 'components/composite/ChartBar';
 import { CardLoading, ChartBarLoading } from 'components/general/Loading';
@@ -686,7 +688,10 @@ export default {
           moreDeaths: () => this.sortByDeaths(allStateData),
           lessCases: () => this.sortByCases(allStateData, 'less'),
           lessDeaths: () => this.sortByDeaths(allStateData, 'less'),
-          nop: () => console.error(`Sort ${sortOrder} not allow`),
+          nop: () => logError({
+            prefix: 'fail-to-sort-states',
+            message: `Sort ${sortOrder} not allow`,
+          }),
         };
 
         if (hasIn(sortType, sortOrder)) sortType[sortOrder]();
@@ -694,7 +699,10 @@ export default {
 
         this.currentSort = sortOrder;
       } catch (ex) {
-        console.error(ex);
+        logError({
+          prefix: 'fail-to-sort',
+          message: ex.message,
+        });
       }
     },
 
