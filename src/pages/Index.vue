@@ -96,9 +96,54 @@
             </div>
           </template>
         </div>
+
+        <template>
+          <div
+            v-if="currentCountry === 'Brazil'"
+            class="row col-12 q-mt-md q-col-gutter-sm">
+
+            <q-separator class="q-mb-md col-10 offset-1" />
+
+            <div class="row col-12 justify-between">
+              <p class="col-12 col-sm-grow text-h5 col-grow q-mb-xs text-weight-bold">
+                Estados Brasileiros
+              </p>
+
+              <div class="row col-12 col-sm-shrink items-center">
+                <span class="col-shrink q-pr-sm q-pb-xs text-weight-bold">
+                  Ordenar por:
+                </span>
+
+                <div style="min-width: 110px">
+                  <div class="col-shrink">
+                    <q-select
+                      borderless
+                      dense
+                      hide-bottom-space
+                      behavior="menu"
+                      class="col"
+                      :disable="loadingData"
+                      :emit-value="false"
+                      :options="sortOptions"
+                      :value="getCurrentSort"
+                      @input="sortStatesByParam" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              v-for="state in covidData.allStateData"
+              class="state-info col-12 col-sm-6 col-md-4 row"
+              :key="state.uid">
+              <Card
+                :key="state.uid"
+                :data="state" />
+            </div>
+          </div>
+        </template>
       </template>
 
-      <template v-else-if="currentState">
+      <template v-else-if="!loadingData && currentState">
         <div class="row col-12 q-col-gutter-sm q-mb-md">
 
           <q-separator class="q-mb-xl col-10 offset-1" />
@@ -113,7 +158,11 @@
 
       <template v-else>
         <div class="col-12 row">
-          <p class="col-12 text-center">Trazendo os dados...</p>
+          <CardLoading class="q-mb-md" />
+          <div class="col-12 row q-col-gutter-sm">
+            <ChartBarLoading class="col-12 col-md-6" />
+            <ChartBarLoading class="col-12 col-md-6" />
+          </div>
         </div>
       </template>
     </div>
@@ -121,11 +170,12 @@
 </template>
 
 <script>
-import { isNull, isEmpty } from 'lodash';
+import { isNull, isEmpty, hasIn } from 'lodash';
 import dayjs from 'dayjs';
 
 import { CountryCard, Card } from 'components/general/Card';
 import { ChartBar } from 'components/composite/ChartBar';
+import { CardLoading, ChartBarLoading } from 'components/general/Loading';
 
 export default {
   name: 'PageIndex',
@@ -134,6 +184,8 @@ export default {
     CountryCard,
     ChartBar,
     Card,
+    CardLoading,
+    ChartBarLoading,
   },
 
   data() {
@@ -157,6 +209,14 @@ export default {
       savedCountriesOptions: [],
 
       chartData: {},
+
+      currentSort: 'moreCases',
+      sortOptions: [
+        { label: 'Mais casos confirmados', value: 'moreCases' },
+        { label: 'Mais mortes', value: 'moreDeaths' },
+        { label: 'Menos casos confirmados', value: 'lessCases' },
+        { label: 'Menos mortes', value: 'lessDeaths' },
+      ],
     };
   },
 
@@ -196,6 +256,14 @@ export default {
       return [
         value => (value && dayjs(value).isValid()) || 'Informe uma data válida',
       ];
+    },
+
+    getCurrentSort() {
+      const { currentSort = '', sortOptions = [] } = this;
+
+      const { label = '' } = sortOptions.find(item => item.value === currentSort);
+
+      return label;
     },
   },
 
@@ -412,10 +480,24 @@ export default {
      * @description Search brazilian state reports from a specific date
      */
     async searchByDate() {
-      // const { dateToSearch: date } = this;
-      // await this.getCountryReport({ date });
+      const { dateToSearch: date } = this;
 
-      // this.mountData();
+      const data = await this.getCountryReport({ date });
+
+      if (isEmpty(data)) {
+        this.$q.notify({
+          message: 'Não há nenhum registro para a data informada',
+          color: 'red',
+        });
+        return;
+      }
+
+      this.covidData = {
+        ...this.covidData,
+        allStateData: data,
+      };
+
+      this.mountChart();
     },
 
     /**
@@ -521,6 +603,110 @@ export default {
             },
           ],
         },
+      };
+    },
+
+    /**
+     * @author Guilherme Toni <guilhermedelly8@gmail.com>
+     *
+     * @description Sorting brazilian states by sorting type
+     *
+     * @param {object} item - Current selected option in sorting select
+     * @param {string} item.value - Current selected value
+     * @param {string} item.label - Current selected label
+     */
+    sortStatesByParam(item) {
+      const { value: order } = item;
+
+      this.sorting = { ...item };
+      this.changeSorting(order);
+    },
+
+    /**
+     * @author Thiago Anselmo <thiagoo.anselmoo@gmail.com>
+     *
+     * @description Change the current brazilian state report sorting
+     *
+     * @param {string} sortOrder
+     */
+    changeSorting(sortOrder) {
+      if (sortOrder === this.currentSort) return;
+
+      try {
+        const { covidData } = this;
+        const { allStateData } = covidData;
+
+        const sortType = {
+          moreCases: () => this.sortByCases(allStateData),
+          moreDeaths: () => this.sortByDeaths(allStateData),
+          lessCases: () => this.sortByCases(allStateData, 'less'),
+          lessDeaths: () => this.sortByDeaths(allStateData, 'less'),
+          nop: () => console.error(`Sort ${sortOrder} not allow`),
+        };
+
+        if (hasIn(sortType, sortOrder)) sortType[sortOrder]();
+        else sortType.nop();
+
+        this.currentSort = sortOrder;
+      } catch (ex) {
+        console.error(ex);
+      }
+    },
+
+    /**
+     * @author Thiago Anselmo <thiagoo.anselmoo@gmail.com>
+     *
+     * @description Apply sort by cases on states
+     *
+     * @param {array} data - all states
+     * @param {string} comparison=more - comparison type
+     */
+    sortByCases(data, comparison = 'more') {
+      let sortedData = [];
+      sortedData = data
+        .sort((a, b) => {
+          if (a.cases < b.cases) return 1;
+          if (a.cases > b.cases) return -1;
+
+          return 0;
+        });
+
+      if (comparison === 'less') {
+        sortedData = sortedData.reverse();
+      }
+
+      this.covidData = {
+        ...this.covidData,
+        allStateData: sortedData,
+      };
+    },
+
+    /**
+     * @author Thiago Anselmo <thiagoo.anselmoo@gmail.com>
+     *
+     * @description Apply sort by deaths on states
+     *
+     * @param {array} data - all states
+     * @param {string} comparison=more - comparison type
+     */
+    sortByDeaths(data, comparison = 'more') {
+      let sortedData = [];
+
+      sortedData = data
+        .sort((a, b) => {
+          if (a.deaths < b.deaths) return 1;
+          if (a.deaths > b.deaths) return -1;
+
+          return 0;
+        });
+
+      if (comparison === 'less') {
+        sortedData = sortedData.reverse();
+      }
+
+      this.covidData = {
+        ...this.covidData,
+        allStateData: sortedData,
       };
     },
   },
