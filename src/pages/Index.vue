@@ -66,7 +66,6 @@
             :debounce="500"
             :disable="loadingData"
             :fill-input="false"
-            :rules="dateRules"
             @input="searchByDate">
             <template v-slot:append>
               <q-icon name="event" />
@@ -75,7 +74,7 @@
         </div>
       </div>
 
-      <template v-if="!loadingData">
+      <template v-if="showCountryCardInfo">
         <div class="row col-12 q-col-gutter-sm q-mb-md justify-between">
           <div class="country-info col-12 col-md-12 row q-mb-md">
             <CountryCard :data="countryInfo" />
@@ -99,6 +98,19 @@
         </div>
       </template>
 
+      <template v-else-if="currentState">
+        <div class="row col-12 q-col-gutter-sm q-mb-md">
+
+          <q-separator class="q-mb-xl col-10 offset-1" />
+
+          <div class="single-state-info col-12 col-sm-6 col-md-4 row">
+            <Card
+              showUpdateAt
+              :data="stateInfo" />
+          </div>
+        </div>
+      </template>
+
       <template v-else>
         <div class="col-12 row">
           <p class="col-12 text-center">Trazendo os dados...</p>
@@ -109,10 +121,10 @@
 </template>
 
 <script>
-import { isNull } from 'lodash';
+import { isNull, isEmpty } from 'lodash';
 import dayjs from 'dayjs';
 
-import { CountryCard } from 'components/general/Card';
+import { CountryCard, Card } from 'components/general/Card';
 import { ChartBar } from 'components/composite/ChartBar';
 
 export default {
@@ -121,6 +133,7 @@ export default {
   components: {
     CountryCard,
     ChartBar,
+    Card,
   },
 
   data() {
@@ -128,6 +141,7 @@ export default {
       covidData: {},
 
       countryInfo: {},
+      stateInfo: {},
 
       loadingData: false,
 
@@ -149,6 +163,10 @@ export default {
   computed: {
     isMobile() {
       return this.$q.screen.lt.md;
+    },
+
+    showCountryCardInfo() {
+      return !this.loadingData && isEmpty(this.currentState);
     },
 
     showCurrentStateSelectedValue() {
