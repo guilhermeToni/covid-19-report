@@ -50,7 +50,7 @@ export default {
 
       const flag = country.toLowerCase() === 'brazil'
         ? './bandeiraBrasil.jpg'
-        : '';
+        : './mapa-mundo.jpg';
 
       return {
         country,
