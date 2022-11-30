@@ -1,4 +1,5 @@
 import axios from 'src/services/covidApi/v1/http';
+import dayjs from 'dayjs';
 import { logError } from 'src/services/helper';
 
 export default {
@@ -10,25 +11,16 @@ export default {
    *
    * @param {object} params - params to get cases by country
    * @param {string} params.country=brazil - country name
+   * @param {string} params.date - date to search
    *
    * @return {Promise<*>}
    */
   async getByCountry(params = {}) {
-    console.log('params', params);
-    let {
-      country = 'brazil',
-    } = params;
+    const { country = 'brazil', date = '' } = params;
 
-    if (!country) {
-      return logError({
-        prefix: 'empty-required-parameter',
-        message: 'country name is required',
-      });
-    }
+    const dateFormatted = date ? `/${dayjs(date).format('YYYYMMDD')}` : '';
 
-    country = country.toLowerCase();
-
-    const url = `/report/v1/${country}`;
+    const url = `/report/v1/${country}${dateFormatted}`;
 
     try {
       const { data = {} } = await axios.get(url);
@@ -38,6 +30,28 @@ export default {
 
       return logError({
         prefix: 'fail-to-get-country',
+        message,
+      });
+    }
+  },
+
+  /**
+   * @author Guilherme Toni <guilhermedelly8@gmail.com>
+   *
+   * @async
+   * @description Get covid-19 reports from all countries
+   *
+   * @return {Promise<*>}
+   */
+  async getAllCountries() {
+    try {
+      const { data = {} } = await axios.get('/report/v1/countries');
+      return data.data || {};
+    } catch (ex) {
+      const { message = '' } = ex;
+
+      return logError({
+        prefix: 'fail-to-get-countries',
         message,
       });
     }

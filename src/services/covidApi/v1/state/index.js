@@ -14,12 +14,7 @@ export default {
    * @return {Promise<*>}
    */
   async getByState(params = {}) {
-    console.log('params', params);
-    const {
-      state = 'sp',
-    } = params;
-
-    if (!state) return logError({ message: 'state abbr is required' });
+    const { state = 'sp' } = params;
 
     try {
       const url = `/report/v1/brazil/uf/${state}`;
