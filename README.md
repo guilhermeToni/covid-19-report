@@ -17,7 +17,7 @@ Clone o repositório em sua máquina.
 ```
 
 #### Instale todas as dependências
-Este passo pode demorar um pouco.
+Abra a pasta do projeto em um terminal e use o comando abaixo para instalar as dependências do projeto. Este passo pode demorar um pouco.
 
 ```bash
   $ yarn
@@ -25,7 +25,7 @@ Este passo pode demorar um pouco.
   $ npm i
 ```
 #### Executando projeto
-Abra a pasta do projeto em um terminal e execute o comando.
+Execute o comando para rodar a aplicação.
 
 ```bash
   $ yarn dev
