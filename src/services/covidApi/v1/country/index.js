@@ -1,5 +1,4 @@
 import axios from 'src/services/covidApi/v1/http';
-import dayjs from 'dayjs';
 import { logError } from 'src/services/helper';
 
 export default {
@@ -18,7 +17,9 @@ export default {
   async getByCountry(params = {}) {
     const { country = 'brazil', date = '' } = params;
 
-    const dateFormatted = date ? `/${dayjs(date).format('YYYYMMDD')}` : '';
+    const [day, month, year] = date.split('/');
+
+    const dateFormatted = date ? `/${year}${month}${day}` : '';
 
     const url = `/report/v1/${country}${dateFormatted}`;
 

@@ -18,7 +18,6 @@ export default {
 
     try {
       const url = `/report/v1/brazil/uf/${state}`;
-      console.log('url', url);
 
       const { data = {} } = await axios.get(url);
       return data || {};
