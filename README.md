@@ -1,6 +1,4 @@
 ![Logo](https://raw.githubusercontent.com/guilhermeToni/covid-19-report/main/public/logo.png)
-
-Plataforma de empregos gratuita para recrutadores e candidatos
 ## Tech Stack
 
 **Client:** Vuejs, Quasar Framework
