@@ -1,31 +1,40 @@
-# Covid-19 Report (covid-19-report)
+![Logo](https://raw.githubusercontent.com/guilhermeToni/covid-19-report/main/public/logo.png)
+## Tech Stack
 
-A Quasar Project
+**Client:** Vuejs, Quasar Framework
 
-## Install the dependencies
+**API:** https://covid19-brazil-api-docs.vercel.app/
+
+**Repository:** Github
+## Executando o projeto
+
+Aqui estou supondo que você já possua as ferramentas de `git`, `node` e `npm` e/ou `yarn` instaladas em seu ambiente.
+#### Clone o repositório
+Clone o repositório em sua máquina.
+
 ```bash
-yarn
-# or
-npm install
+  $ git clone https://github.com/guilhermeToni/covid-19-report.git
 ```
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
+#### Instale todas as dependências
+Este passo pode demorar um pouco.
+
 ```bash
-quasar dev
+  $ yarn
+  # ou
+  $ npm i
+```
+#### Executando projeto
+Abra a pasta do projeto em um terminal e execute o comando.
+
+```bash
+  $ yarn dev
+  # ou
+  $ npm run
 ```
 
 
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
+## Autor
 
-### Build the app for production
-```bash
-quasar build
-```
+- [@guilhermeToni](https://www.github.com/guilhermeToni)
 
-### Customize the configuration
-See [Configuring quasar.conf.js](https://v1.quasar.dev/quasar-cli/quasar-conf-js).
