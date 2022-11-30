@@ -80,6 +80,22 @@
           <div class="country-info col-12 col-md-12 row q-mb-md">
             <CountryCard :data="countryInfo" />
           </div>
+
+          <template v-if="currentCountry === 'Brazil'">
+            <div class="row col-12 col-md-6">
+              <ChartBar
+                class="col"
+                id="chart-brazil-cases"
+                :chartData="chartData.cases" />
+            </div>
+
+            <div class="row col-12 col-md-6">
+              <ChartBar
+                class="col"
+                id="chart-brazil-deaths"
+                :chartData="chartData.deaths" />
+            </div>
+          </template>
         </div>
       </template>
 
@@ -97,12 +113,14 @@ import { isNull } from 'lodash';
 import dayjs from 'dayjs';
 
 import { CountryCard } from 'components/general/Card';
+import { ChartBar } from 'components/composite/ChartBar';
 
 export default {
   name: 'PageIndex',
 
   components: {
     CountryCard,
+    ChartBar,
   },
 
   data() {
@@ -123,6 +141,8 @@ export default {
 
       countriesOptions: [],
       savedCountriesOptions: [],
+
+      chartData: {},
     };
   },
 
@@ -192,6 +212,8 @@ export default {
     this.countryInfo = countryData;
     this.currentCountry = 'Brazil';
     this.dateToSearch = dayjs().format('DD/MM/YYYY');
+
+    this.mountChart();
 
     this.loadingData = false;
   },
@@ -424,6 +446,64 @@ export default {
           .savedStateOptions
           .filter(({ label: optionLabel }) => optionLabel.toLowerCase().indexOf(needle) > -1);
       });
+    },
+
+    /**
+     * @author Guilherme Toni <guilhermedelly8@gmail.com>
+     *
+     * @description Mount brazilian state reports in a chart data
+     */
+    mountChart() {
+      const { covidData = {} } = this;
+      const { allStateData = [] } = covidData;
+
+      const dataFromChart = allStateData.reduce((statesAndCases, currentData) => {
+        const {
+          state,
+          cases,
+          deaths,
+        } = currentData;
+
+        return {
+          cases: {
+            ...statesAndCases.cases,
+            [state]: cases,
+          },
+          deaths: {
+            ...statesAndCases.deaths,
+            [state]: deaths,
+          },
+        };
+      }, {});
+
+      const confirmedCasesLabel = Object.keys(dataFromChart.cases);
+      const confirmedCasesData = Object.values(dataFromChart.cases);
+
+      const deathsCasesLabel = Object.keys(dataFromChart.deaths);
+      const deathsCasesData = Object.values(dataFromChart.deaths);
+
+      this.chartData = {
+        deaths: {
+          labels: deathsCasesLabel,
+          datasets: [
+            {
+              label: 'Mortes por estado',
+              backgroundColor: '#f00',
+              data: deathsCasesData,
+            },
+          ],
+        },
+        cases: {
+          labels: confirmedCasesLabel,
+          datasets: [
+            {
+              label: 'Casos confirmados por estado',
+              backgroundColor: '#1976d2',
+              data: confirmedCasesData,
+            },
+          ],
+        },
+      };
     },
   },
 };
