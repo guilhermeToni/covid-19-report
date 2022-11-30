@@ -14,6 +14,7 @@ Vue.use(Vuex);
  * with the Store instance.
  */
 
+// eslint-disable-next-line func-names
 export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     modules: {
