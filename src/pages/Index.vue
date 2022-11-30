@@ -166,16 +166,31 @@
         </div>
       </template>
     </div>
+
+    <q-page-sticky
+      v-show="showBackToTopButton"
+      position="bottom-right"
+      :offset="[18, 18]">
+      <q-btn
+        dense
+        fab
+        color="primary"
+        icon="keyboard_arrow_up"
+        @click="scrollToTop" />
+    </q-page-sticky>
   </q-page>
 </template>
 
 <script>
+import { scroll } from 'quasar';
 import { isNull, isEmpty, hasIn } from 'lodash';
 import dayjs from 'dayjs';
 
 import { CountryCard, Card } from 'components/general/Card';
 import { ChartBar } from 'components/composite/ChartBar';
 import { CardLoading, ChartBarLoading } from 'components/general/Loading';
+
+const { getScrollTarget, animScrollTo } = scroll;
 
 export default {
   name: 'PageIndex',
@@ -190,6 +205,9 @@ export default {
 
   data() {
     return {
+      showBackToTopButton: false,
+      targetScrollY: 500,
+
       covidData: {},
 
       countryInfo: {},
@@ -268,6 +286,8 @@ export default {
   },
 
   async mounted() {
+    document.addEventListener('scroll', () => this.eventScroll());
+
     this.loadingData = true;
 
     const getCountryReportPromise = this.getCountryReport();
@@ -305,6 +325,31 @@ export default {
   },
 
   methods: {
+    /**
+     * @author Guilherme Toni <guilhermedelly8@gmail.com>
+     *
+     * @description Check scrollY from page
+     */
+    eventScroll() {
+      this.showBackToTopButton = window.scrollY >= this.targetScrollY;
+    },
+
+    /**
+     * @author Guilherme Toni <guilhermedelly8@gmail.com>
+     *
+     * @description Scroll to top
+     */
+    scrollToTop() {
+      const elElement = document.querySelector('.q-page');
+      const scrollTop = window.scrollY + elElement
+        .getBoundingClientRect()
+        .top;
+      const elElementToScroll = getScrollTarget(elElement);
+      const duration = 800;
+      const offset = 70;
+      animScrollTo(elElementToScroll, scrollTop - offset, duration);
+    },
+
     /**
      * @author Guilherme Toni <guilhermedelly8@gmail.com>
      *

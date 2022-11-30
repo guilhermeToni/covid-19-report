@@ -4,15 +4,18 @@
       bordered
       class="bg-white">
       <q-toolbar class="text-primary">
-        <q-toolbar-title>
+        <q-toolbar-title :class="isMobile ? 'col-12 text-center' : ''">
           <q-icon name="fa fa-virus-covid" />
           <span class="text-body2 q-ml-sm">Covid-19 Report</span>
         </q-toolbar-title>
 
         <q-space />
 
-        <p class="q-mb-none">
-          <span class="q-mr-sm text-black">Status da API</span>
+        <p
+          v-show="!isMobile"
+          class="q-mb-none">
+          <span
+            class="q-mr-sm text-black">Status da API</span>
           <q-badge
             class="q-pa-sm"
             :color="apiStatus.color"
@@ -27,6 +30,27 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <q-footer
+      bordered
+      class="bg-white">
+      <q-toolbar class="text-primary">
+        <p class="q-mb-none">
+          <q-icon name="fa fa-virus-covid" />
+          <span class="text-body2 q-ml-sm">Covid-19 Report</span>
+        </p>
+
+        <q-space />
+
+        <p class="q-mb-none text-caption text-weight-500">Made by
+          <a
+            class="footer-link"
+            href="github.com/guilhermeToni/covid-19-report"
+            target="_blank"
+            >Guilherme Toni</a>
+        </p>
+      </q-toolbar>
+    </q-footer>
   </q-layout>
 </template>
 
@@ -42,6 +66,11 @@ export default {
         textColor: '',
       },
     };
+  },
+  computed: {
+    isMobile() {
+      return this.$q.screen.lt.md;
+    },
   },
 
   async mounted() {
@@ -75,3 +104,10 @@ export default {
   },
 };
 </script>
+
+<style>
+.footer-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+</style>
